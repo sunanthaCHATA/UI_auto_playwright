@@ -19,11 +19,15 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-                sh 'npx playwright install --with-deps'
-            }
-        }
+    steps {
+        sh 'npm install'
+        // This installs the browser binaries (doesn't need sudo)
+        sh 'npx playwright install chromium' 
+        
+        // REMOVE the --with-deps line if it's causing sudo errors.
+        // Instead, ensure the Linux dependencies are already on the agent.
+    }
+}
 
         stage('Execute Tests') {
             steps {
