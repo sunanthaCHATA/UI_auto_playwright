@@ -5,7 +5,7 @@ pipeline {
         // Map Jenkins credentials to the names your dbUtils.ts expects
         DB_HOST = '10.15.0.54'
         DB_PORT = '5432'
-        DB_USER = 'automation_user'
+        DB_USER = 'qa_test_db_user'
         DB_NAME = 'qa_test_db'
         // This pulls the secret from Jenkins Credential Store
         DB_PASSWORD = credentials('DB_PASSWORD') 
