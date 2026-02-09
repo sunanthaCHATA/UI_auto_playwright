@@ -22,7 +22,11 @@ pipeline {
     steps {
         sh 'npm install'
         // This installs the browser binaries (doesn't need sudo)
-        sh 'npx playwright install chromium' 
+       //  sh 'npx playwright install chromium'  - To only run the tests on Chromium
+      
+        // This command installs Chromium, Firefox, and Webkit binaries
+        sh 'npx playwright install' 
+    
         
         // REMOVE the --with-deps line if it's causing sudo errors.
         // Instead, ensure the Linux dependencies are already on the agent.
