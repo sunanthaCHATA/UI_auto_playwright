@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Map Jenkins credentials to the names your dbUtils.ts expects
-        DB_HOST = '127.0.0.1' // Or your remote DB IP
+        DB_HOST = '10.15.0.54'
         DB_PORT = '5432'
         DB_USER = 'automation_user'
         DB_NAME = 'qa_test_db'
