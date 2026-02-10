@@ -7,6 +7,7 @@ pipeline {
         DB_USER = 'qa_test_db_user'
         DB_NAME = 'qa_test_db'
         DB_PASSWORD = credentials('DB_PASSWORD')
+        DOTENV_QUIET = 'true' 
         CI = 'true' // Standard practice for Playwright in Jenkins
     }
 
