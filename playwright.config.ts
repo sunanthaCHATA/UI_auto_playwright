@@ -17,8 +17,8 @@ export default defineConfig({
   timeout: 120000, 
 
   /* 2. REDUCE RETRIES: Set to 1 for CI to save time. */
-  retries: process.env.CI ? 1 : 0,
-  
+  // retries: process.env.CI ? 1 : 0,
+  retries: 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html']],
   
