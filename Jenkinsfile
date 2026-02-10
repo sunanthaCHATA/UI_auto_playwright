@@ -26,7 +26,7 @@ pipeline {
         stage('Execute Tests') {
             steps {
                 // The --reporter=list or --reporter=line makes logs much cleaner in Jenkins
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --reporter=list'
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list'
             }
         }
     }
