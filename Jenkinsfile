@@ -11,16 +11,11 @@ pipeline {
         CI = 'true' // Standard practice for Playwright in Jenkins
     }
 
-    stages {
-        stage('Cleanup Workspace') {
-            steps {
-                // This ensures old reports from previous builds are deleted
-                cleanWs() 
-            }
-        }
+    stages {}
         
         stage('Checkout') {
             steps { checkout scm }
+            sh 'rm -rf playwright-report test-results'
         }
 
         stage('Install') {
@@ -33,6 +28,7 @@ pipeline {
         stage('Execute Tests') {
             steps {
                 // The --reporter=list or --reporter=line makes logs much cleaner in Jenkins
+                sh 'rm -rf allure-results' // Clean old results
                 sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list'
             }
         }
@@ -47,7 +43,9 @@ pipeline {
             reportDir: 'playwright-report', // Capture the WHOLE folder
             reportFiles: 'index.html',
             reportName: 'Playwright Report'
+            
         ])
+        allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
     }
 }
 }
