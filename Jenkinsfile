@@ -30,16 +30,16 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            publishHTML(target: [
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright Report'
-            ])
-        }
+   post {
+    always {
+        publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'playwright-report', // Capture the WHOLE folder
+            reportFiles: 'index.html',
+            reportName: 'Playwright Report'
+        ])
     }
+}
 }
