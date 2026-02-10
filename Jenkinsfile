@@ -2,47 +2,36 @@ pipeline {
     agent any
     
     environment {
-        // Map Jenkins credentials to the names your dbUtils.ts expects
         DB_HOST = '10.15.0.54'
         DB_PORT = '5432'
         DB_USER = 'qa_test_db_user'
         DB_NAME = 'qa_test_db'
-        // This pulls the secret from Jenkins Credential Store
-        DB_PASSWORD = credentials('DB_PASSWORD') 
+        DB_PASSWORD = credentials('DB_PASSWORD')
+        CI = 'true' // Standard practice for Playwright in Jenkins
     }
 
     stages {
         stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Install') {
             steps {
-                checkout scm
+                sh 'npm ci' // 'npm ci' is faster and cleaner for Jenkins than 'npm install'
+                sh 'npx playwright install chromium' // Only install what you actually use
             }
         }
 
-        stage('Install Dependencies') {
-    steps {
-        sh 'npm install'
-        // This installs the browser binaries (doesn't need sudo)
-       //  sh 'npx playwright install chromium'  - To only run the tests on Chromium
-      
-        // This command installs Chromium, Firefox, and Webkit binaries
-        sh 'npx playwright install' 
-    
-        
-        // REMOVE the --with-deps line if it's causing sudo errors.
-        // Instead, ensure the Linux dependencies are already on the agent.
-    }
-}
-
         stage('Execute Tests') {
             steps {
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts'
+                // The --reporter=list or --reporter=line makes logs much cleaner in Jenkins
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --reporter=list'
             }
         }
     }
 
     post {
         always {
-            // Archive reports so you can see them in Jenkins
             publishHTML(target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: true,
