@@ -12,6 +12,13 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup Workspace') {
+            steps {
+                // This ensures old reports from previous builds are deleted
+                cleanWs() 
+            }
+        }
+        
         stage('Checkout') {
             steps { checkout scm }
         }
