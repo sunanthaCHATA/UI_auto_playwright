@@ -19,7 +19,7 @@ export default defineConfig({
   /* 2. REDUCE RETRIES: Set to 1 for CI to save time. */
   // retries: process.env.CI ? 1 : 0,
   retries: 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: [['html']],
   
   use: {
