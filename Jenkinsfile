@@ -35,7 +35,7 @@ pipeline {
 
         stage('Execute Tests') {
             steps {
-                sh 'npx playwright test tests/test1.spec.ts'
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts'
             }
         }
     }
