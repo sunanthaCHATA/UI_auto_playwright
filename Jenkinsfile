@@ -12,10 +12,10 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Cleanup & Checkout') {
             steps { 
                 checkout scm 
-                // 1. CLEAN: Remove old results so you don't get "ghost" data
+                // Wipe everything to ensure no old errors remain
                 sh 'rm -rf playwright-report test-results allure-results'
             }
         }
@@ -23,35 +23,38 @@ pipeline {
         stage('Install') {
             steps {
                 sh 'npm ci'
-                sh 'npx playwright install chromium'
+                /* CRITICAL: We skip --with-deps here because it needs a password.
+                   I am adding --force to ensure browsers are there.
+                */
+                sh 'npx playwright install chromium --force'
             }
         }
 
         stage('Execute Tests') {
             steps {
-                /* 2. RUN ONCE: Use the config file which ALREADY has both reporters.
-                   Adding --reporter=list here ensures you see progress in the Jenkins console
-                   without breaking the other reporters in your config. */
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --config=playwright.config.ts --project=chromium --reporter=list,line'
+                /* If this still fails, check the "Console Output" in Jenkins.
+                   It will tell us if a library like 'libgbm' is missing.
+                */
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list,html,allure-playwright'
             }
         }
     }
 
     post {
         always {
-            // 3. PUBLISH BOTH: Ensure these paths match your playwright.config.ts
-            
-            // This captures the 'playwright-report' folder
-            publishHTML(target: [
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report'
-            ])
-            
-            // This captures the 'allure-results' folder
+            // Only tries to publish if the directory actually exists now
+            script {
+                if (fileExists('playwright-report/index.html')) {
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'playwright-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Playwright HTML Report'
+                    ])
+                }
+            }
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
     }
