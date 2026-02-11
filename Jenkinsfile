@@ -26,7 +26,7 @@ pipeline {
                 /* CRITICAL: We skip --with-deps here because it needs a password.
                    I am adding --force to ensure browsers are there.
                 */
-                sh 'npx playwright install chromium --force'
+                sh 'npx playwright install chromium'
             }
         }
 
