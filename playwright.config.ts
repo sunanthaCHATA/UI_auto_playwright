@@ -20,7 +20,7 @@ export default defineConfig({
   // retries: process.env.CI ? 1 : 0,
   retries: 0,
   workers: 1,
-  reporter: [ ['html'],
+  reporter: [ ['html' , { open: 'never' }],
   ['allure-playwright', {
     detail: true,                               // Shows steps in the report
       outputFolder: 'allure-results',             // Where raw data is saved

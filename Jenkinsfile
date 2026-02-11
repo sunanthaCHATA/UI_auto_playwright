@@ -11,12 +11,11 @@ pipeline {
         CI = 'true'
     }
 
-    stages { // Open stages block ONCE
-        
+    stages {
         stage('Checkout') {
             steps { 
                 checkout scm 
-                // Moved inside steps where it belongs
+                // 1. CLEAN: Remove old results so you don't get "ghost" data
                 sh 'rm -rf playwright-report test-results allure-results'
             }
         }
@@ -24,28 +23,35 @@ pipeline {
         stage('Install') {
             steps {
                 sh 'npm ci'
-                sh 'npx playwright install chromium'
+                sh 'npx playwright install chromium --with-deps'
             }
         }
 
         stage('Execute Tests') {
             steps {
-                // Executing with --project=chromium ensures only 1 run
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list'
+                /* 2. RUN ONCE: Use the config file which ALREADY has both reporters.
+                   Adding --reporter=list here ensures you see progress in the Jenkins console
+                   without breaking the other reporters in your config. */
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --config=playwright.config.ts --project=chromium --reporter=list,line'
             }
         }
-    } // Close stages block ONCE
+    }
 
     post {
         always {
+            // 3. PUBLISH BOTH: Ensure these paths match your playwright.config.ts
+            
+            // This captures the 'playwright-report' folder
             publishHTML(target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: true,
                 keepAll: true,
                 reportDir: 'playwright-report',
                 reportFiles: 'index.html',
-                reportName: 'Playwright Report'
+                reportName: 'Playwright HTML Report'
             ])
+            
+            // This captures the 'allure-results' folder
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
     }
