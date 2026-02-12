@@ -132,6 +132,7 @@ async getTooltipStats(columnName: string) {
         total: totalLine.trim(),
         average: averageLine.trim()
     };
+    
 }
 
 }

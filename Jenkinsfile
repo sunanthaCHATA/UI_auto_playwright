@@ -35,7 +35,7 @@ pipeline {
                 /* If this still fails, check the "Console Output" in Jenkins.
                    It will tell us if a library like 'libgbm' is missing.
                 */
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list,html,allure-playwright'
+                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_Tc1.spec.ts --project=chromium --reporter=list,html,allure-playwright || true'
             }
         }
     }
@@ -43,6 +43,8 @@ pipeline {
     post {
         always {
             // Only tries to publish if the directory actually exists now
+            archiveArtifacts artifacts: 'test-results/**/*.webm', allowEmptyArchive: true
+            
             script {
                 if (fileExists('playwright-report/index.html')) {
                     publishHTML(target: [

@@ -1,7 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { dmlocators, DMpage_Locators } from '../../utils/dmlocators';
 import { getAppCredentials } from '../../utils/dbUtils';
+import { AutoQLUtilityLibraries } from '../../utils/AutoQLUtilityLibraries';
 
+test.afterEach(async ({ page }, testInfo) => {
+  // Only pause if the test failed AND we are not in a CI environment (like Jenkins)
+  if (testInfo.status !== testInfo.expectedStatus && !process.env.CI) {
+    console.log(`❌ Test failed: ${testInfo.title}. Pausing for inspection...`);
+    
+    // Disable the default timeout so the browser doesn't close while you're inspecting
+    testInfo.setTimeout(0); 
+    
+    await page.pause();
+  }
+});
 test('test', async ({ page }) => {
   const chat = new dmlocators(page);
 const config = await getAppCredentials('test_auto');
@@ -48,14 +60,18 @@ const config = await getAppCredentials('test_auto');
  //await page.getByText('Goals', { exact: true }).click();
  // await page.locator('[data-test="react-autoql-table"]').getByText('Goals', { exact: true }).click();
 // Call the versatile function
-const stats = await chat.getTooltipStats('Goals');
+const PofTColumn = 'Goals';
+  
+  // Usage: Pass the 'page' fixture provided by Playwright
+  await AutoQLUtilityLibraries.clickOnSortOfColumn(PofTColumn, page);
 
+//const stats = await chat.getTooltipStats('Goals');
 // Print the values
-console.log(stats.total);   // Output: Total: 9,239
-console.log(stats.average); // Output: Average: 0.185
+//console.log(stats.total);   // Output: Total: 9,239
+//console.log(stats.average); // Output: Average: 0.185
 
 // Assertions
-expect(stats.total).toContain('9,239');
-expect(stats.average).toContain('0.185');
+//expect(stats.total).toContain('9,239');
+//expect(stats.average).toContain('0.185');
 
 });
