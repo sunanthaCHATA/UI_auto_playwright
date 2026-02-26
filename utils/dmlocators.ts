@@ -10,13 +10,22 @@ export const DMpage_Locators = {
 	DM_CustomButton: "xpath=//*[@class='more-options-menu react-autoql-add-column-menu']/ul/li[contains(text(), 'Custom')]",
     DM_quickTopicsPlayerMovingAvg: "xpath=//button[(text()='Player moving average')]",
     DM_quickTopicsSubmit: "xpath=//*[@data-tooltip-content='Submit Query']",
-
+    DM_responseTableColumns: "xpath=//*[@class='tabulator-col-title-holder']" ,
+    DM_RemoveColumn: "xpath=//*[@class='context-menu-list']/li[contains(text(), 'Remove Column')]",
     DM_Toolbar_ShowHide_Columns: "xpath=//*[@data-tooltip-html='Show/hide columns']",
   //  DM_Toolbar_ShowHideVisibility: "xpath=(//div[contains(text(),'Visibility')]//parent::div/div//input[@type='checkbox'])[1]",
     DM_ShowHide_Apply: "xpath=//div[text()='Apply']",
-
-
+    DM_CCemptyCOlError: "xpath=//*[contains(text(), 'Column name cannot be empty')]",
+    DM_CCFormulaContainer: "xpath=//div[contains(@class, 'react-autoql-formula-builder-section')]",
    //DM_Customcol_partitionby: "xpath=//div[text()='Partition By Column']/following-sibling::div[@data-test='react-autoql-select']",
+	DM_CustomcolFormula_valid: "xpath=//*[contains(@class, 'formula-builder-validation-message-success')][contains(text(), 'Valid')]",
+	DM_CustomcolFormula_ClearAll: "xpath=//*[text()='Clear All']",
+
+    DM_response_Filter_table: "xpath=//*[@data-tooltip-html='Filter table']",
+
+    DM_ColCellVal: `xpath=(//div[@role='row']/div[@role='gridcell'])`,
+
+    DM_TableFilterBox: "xpath=(//input[@placeholder='Filter'])[1]",
 
     // ... rest of your XPaths
 };
@@ -32,6 +41,7 @@ export class dmlocators {
     }
 
     // ACTION: Another skill
+  
     async clickPlusIcon() {
         await this.page.locator(DMpage_Locators.DM_AddColumn).click();
     }
@@ -51,6 +61,14 @@ export class dmlocators {
         await this.page.locator(DMpage_Locators.DM_Toolbar_ShowHide_Columns).click();
     }
 
+     async DM_CustomcolFormula_ClearAll() {
+        await this.page.locator(DMpage_Locators.DM_CustomcolFormula_ClearAll).click();
+    }
+
+    DM_response_Filter_table() {
+           return this.page.locator(DMpage_Locators.DM_response_Filter_table).click(); 
+    }
+
     DM_Toolbar_ShowHideVisibility() {
     return this.page.locator("xpath=(//div[contains(text(),'Visibility')]//parent::div/div//input[@type='checkbox'])[1]");
   }
@@ -58,6 +76,7 @@ export class dmlocators {
         await this.page.locator(DMpage_Locators.DM_ShowHide_Apply).click();
     }
 
+  
     /*
     DM_Customcol_partitionbyDropdown(optionText: string) {
     return this.page.locator("xpath=//div[text()='Partition By Column']/following-sibling::div[@data-test='react-autoql-select']");
@@ -97,7 +116,6 @@ async checkOption(labelName: string) {
     await checkbox.check();
 }
 
-
 async getTooltipStats(columnName: string) {
     // 1. Find the header - using a broader locator to ensure we hit the hit-box
     const columnHeader = this.page.getByRole('columnheader').filter({ hasText: columnName }).first();
@@ -133,6 +151,43 @@ async getTooltipStats(columnName: string) {
         average: averageLine.trim()
     };
     
+}
+
+async validateRankingLogic(startRow: number, endRow: number) {
+    const goalsArray: number[] = [];
+    const ranksArray: number[] = [];
+
+    for (let i = startRow; i <= endRow; i++) {
+        // dynamic XPaths
+        const xpathGoals = `((//div[@role='row'])[${i}]//div[@role='gridcell' and not(contains(@style, 'display: none'))])[1]`;
+        const xpathRanks = `((//div[@role='row'])[${i}]//div[@role='gridcell' and not(contains(@style, 'display: none'))])[2]`;
+
+        // Extract values
+        const goalVal = await this.page.locator(`xpath=${xpathGoals}`).textContent();
+        const rankVal = await this.page.locator(`xpath=${xpathRanks}`).textContent();
+
+        // Push to arrays (converting strings to numbers)
+        goalsArray.push(Number(goalVal?.trim()));
+        ranksArray.push(Number(rankVal?.trim()));
+    }
+
+    // --- Validation Logic (1224 Ranking) ---
+    const sortedGoals = [...goalsArray].sort((a, b) => b - a);
+
+    for (let i = 0; i < goalsArray.length; i++) {
+        const currentGoal = goalsArray[i];
+        const actualRank = ranksArray[i];
+
+        const expectedRank = sortedGoals.indexOf(currentGoal) + 1;
+
+        if (actualRank !== expectedRank) {
+            throw new Error(
+                `Row ${i + startRow} Mismatch! Goal: ${currentGoal}, Expected Rank: ${expectedRank}, Actual: ${actualRank}`
+            );
+        }
+    }
+
+    return 'rank calculation is correct and validated successfully';
 }
 
 }
