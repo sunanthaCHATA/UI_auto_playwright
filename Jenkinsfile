@@ -35,7 +35,8 @@ pipeline {
                 /* If this still fails, check the "Console Output" in Jenkins.
                    It will tell us if a library like 'libgbm' is missing.
                 */
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_TC1_LQ_validate.spec.ts --project=chromium --reporter=list,html,allure-playwright || true'
+              //  sh 'npx playwright test tests/DM_CustomColFunctions/Rank_TC1_LQ_validate.spec.ts --project=chromium --reporter=list,html,allure-playwright || true'
+                sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --project=chromium --reporter=list,html,allure-playwright || true'
             }
         }
     }
