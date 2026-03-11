@@ -1,0 +1,10 @@
+[DataBaseUtils] Fetching credentials for service: test_auto
+[DataBaseUtils] Connected to database
+[DataBaseUtils] Credentials retrieved successfully
+[DataBaseUtils] Database connection closed
+Custom Column is added on Dashboard with name: Custom Moneyline 2026-03-11T16-58-57-216Z
+Row 1: Goals=3, Points=9, Assists=6, Saves=45, Custom=-55.5, Expected=-55.5
+Row 2: Goals=3, Points=8, Assists=5, Saves=24, Custom=-19, Expected=-19
+Row 3: Goals=2, Points=5, Assists=3, Saves=23, Custom=-10.25, Expected=-10.25
+Row 4: Goals=5, Points=12, Assists=7, Saves=25, Custom=-26.75, Expected=-26.75
+Row 5: Goals=4, Points=12, Assists=8, Saves=21, Custom=-26, Expected=-26

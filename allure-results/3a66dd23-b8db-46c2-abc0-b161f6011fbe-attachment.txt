@@ -1,0 +1,3 @@
+[DataBaseUtils] Fetching credentials for service: test_auto
+[DataBaseUtils] Database connection closed
+Test failed: Validate Add Column functionality on Dashboard. Pausing for inspection...
