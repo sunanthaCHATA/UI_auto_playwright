@@ -43,7 +43,7 @@ export class LoginPage {
   }
 
   get projDropdown() {
-    return this.page.locator(LoginPage_Locators.projDropdown);
+   return this.page.locator(LoginPage_Locators.projDropdown);
   }
 
   projName(projectName: string) {

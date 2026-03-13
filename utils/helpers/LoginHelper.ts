@@ -28,10 +28,12 @@ export class LoginHelper {
     await this.loginPage.continueBtn.click();
 
     // Code to select the project from dropdown
+    await this.loginPage.projDropdown.waitFor({ state: 'attached', timeout: 30000 });
     await this.loginPage.projDropdown.waitFor({ state: 'visible', timeout: 10000 });
     await this.loginPage.projDropdown.click();
     await this.loginPage.projName(projectName).waitFor({ state: 'visible', timeout: 10000 });
     await this.loginPage.projName(projectName).click();
+  
   }
 
 }
