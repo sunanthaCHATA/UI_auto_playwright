@@ -14,7 +14,7 @@ export default defineConfig({
   
   /* 1. INCREASE TIMEOUT: Your logs showed 2.0m (120s) failures. 
      The 60s timeout might be too short for Jenkins agents. */
-  timeout: 120000, 
+  timeout: 240000, 
 
   /* 2. REDUCE RETRIES: Set to 1 for CI to save time. */
   // retries: process.env.CI ? 1 : 0,
@@ -29,7 +29,16 @@ export default defineConfig({
   ['list'],                                     // Optional: nice console output for Jenkins
   ],
 
+  
   use: {
+    launchOptions: {
+    args: [
+      '--disable-gpu',
+      '--no-sandbox',
+      '--disable-dev-shm-usage', 
+      '--disable-setuid-sandbox'
+    ],
+  },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
