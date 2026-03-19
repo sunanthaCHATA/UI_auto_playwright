@@ -48,9 +48,18 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] ,
-      viewport: { width: 1280, height: 720 }
+      viewport: { width: 1280, height: 720 } 
+      }
     },
-  },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+
     /* 3. SHUT THESE OFF: Unless you specifically need to test 
        Safari and Firefox every single time, comment them out. */
     // {
