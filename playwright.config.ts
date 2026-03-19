@@ -31,14 +31,6 @@ export default defineConfig({
 
   
   use: {
-    launchOptions: {
-    args: [
-      '--disable-gpu',
-      '--no-sandbox',
-      '--disable-dev-shm-usage', 
-      '--disable-setuid-sandbox'
-    ],
-  },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -48,8 +40,16 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] ,
-      viewport: { width: 1280, height: 720 } 
-      }
+      viewport: { width: 1280, height: 720 },
+      launchOptions: {
+          args: [
+            '--disable-gpu',
+            '--no-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-setuid-sandbox'
+          ],
+      },
+    },
     },
     {
       name: 'firefox',
