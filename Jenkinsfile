@@ -38,7 +38,7 @@ pipeline {
              wrap([$class: 'Xvfb', screenResolution: '1280x720x24']){
              sh 'npx playwright test tests/DataMessenger_CustCol_TCs/  --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
             //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
-           // sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
+           sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=3 --project=chromium --reporter=list,html,allure-playwright || true'
             }
             }
         }
