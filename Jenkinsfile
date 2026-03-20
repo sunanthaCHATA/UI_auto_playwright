@@ -26,7 +26,7 @@ pipeline {
                 /* CRITICAL: We skip --with-deps here because it needs a password.
                    I am adding --force to ensure browsers are there.
                 */
-                sh 'npx playwright install chromium'
+                sh 'npx playwright install chromium firefox webkit'
             }
         }
 
@@ -35,7 +35,12 @@ pipeline {
                 /* If this still fails, check the "Console Output" in Jenkins.
                    It will tell us if a library like 'libgbm' is missing.
                 */
-                sh 'npx playwright test tests/DM_CustomColFunctions/Rank_TC1_LQ_validate.spec.ts --project=chromium --reporter=list,html,allure-playwright || true'
+             wrap([$class: 'Xvfb', screenResolution: '1280x720x24']){
+            // sh 'npx playwright test tests/DataMessenger_CustCol_TCs/  --workers=1 --reporter=list,html,allure-playwright || true'
+            //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
+           //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=3 --reporter=list,html,allure-playwright || true'
+            sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=4 --reporter=list,html,allure-playwright || true'
+            }
             }
         }
     }

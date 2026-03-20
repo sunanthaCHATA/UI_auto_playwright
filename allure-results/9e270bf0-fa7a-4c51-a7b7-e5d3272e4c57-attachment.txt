@@ -1,0 +1,9 @@
+DB Config: {
+  host: '10.15.0.54',
+  port: '5433',
+  user: 'qa_test_db_user',
+  database: 'qa_test_db'
+}
+[DataBaseUtils] Fetching credentials for service: test_auto
+[DataBaseUtils] Database connection closed
+Test failed: Validate Add Column functionality on Dashboard. Pausing for inspection...
