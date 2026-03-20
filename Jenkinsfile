@@ -39,7 +39,7 @@ pipeline {
             // sh 'npx playwright test tests/DataMessenger_CustCol_TCs/  --workers=1 --reporter=list,html,allure-playwright || true'
             //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
            //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=3 --reporter=list,html,allure-playwright || true'
-            sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=2 --reporter=list,html,allure-playwright || true'
+            sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=1 --reporter=list,html,allure-playwright || true'
             }
             }
         }
