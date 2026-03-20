@@ -31,6 +31,7 @@ export default defineConfig({
 
   
   use: {
+    viewport: { width: 1280, height: 720 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -40,7 +41,6 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] ,
-      viewport: { width: 1280, height: 720 },
       launchOptions: {
           args: [
             '--disable-gpu',
