@@ -15,7 +15,6 @@ pipeline {
         stage('Cleanup & Checkout') {
             steps { 
                 checkout scm 
-                // Wipe everything to ensure no old errors remain
                 sh 'rm -rf playwright-report test-results allure-results'
             }
         }
@@ -23,18 +22,12 @@ pipeline {
         stage('Install') {
             steps {
                 sh 'npm ci'
-                /* CRITICAL: We skip --with-deps here because it needs a password.
-                   I am adding --force to ensure browsers are there.
-                */
                 sh 'npx playwright install chromium firefox webkit'
             }
         }
 
         stage('Execute Tests') {
             steps {
-                /* If this still fails, check the "Console Output" in Jenkins.
-                   It will tell us if a library like 'libgbm' is missing.
-                */
              wrap([$class: 'Xvfb', screenResolution: '1280x720x24']){
             // sh 'npx playwright test tests/DataMessenger_CustCol_TCs/  --workers=1 --reporter=list,html,allure-playwright || true'
             //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
@@ -47,8 +40,7 @@ pipeline {
 
     post {
         always {
-            // Only tries to publish if the directory actually exists now
-            archiveArtifacts artifacts: 'test-results/**/*.webm', allowEmptyArchive: true
+           // archiveArtifacts artifacts: 'test-results/**/*.webm', allowEmptyArchive: true
             script {
                 if (fileExists('playwright-report/index.html')) {
                     publishHTML(target: [
