@@ -39,7 +39,7 @@ pipeline {
             // sh 'npx playwright test tests/DataMessenger_CustCol_TCs/  --workers=1 --reporter=list,html,allure-playwright || true'
             //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ --workers=1 --project=chromium --reporter=list,html,allure-playwright || true'
            //sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=3 --reporter=list,html,allure-playwright || true'
-            sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=4 --reporter=list,html,allure-playwright || true'
+            sh 'npx playwright test tests/Dashboard_CustCol_TCs/ tests/DataMessenger_CustCol_TCs/ --workers=2 --reporter=list,html,allure-playwright || true'
             }
             }
         }
@@ -49,7 +49,6 @@ pipeline {
         always {
             // Only tries to publish if the directory actually exists now
             archiveArtifacts artifacts: 'test-results/**/*.webm', allowEmptyArchive: true
-            
             script {
                 if (fileExists('playwright-report/index.html')) {
                     publishHTML(target: [
@@ -63,6 +62,8 @@ pipeline {
                 }
             }
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            sh 'pkill -f "(chrome|firefox|webkit|msedge)" || true'
+
         }
     }
 }
