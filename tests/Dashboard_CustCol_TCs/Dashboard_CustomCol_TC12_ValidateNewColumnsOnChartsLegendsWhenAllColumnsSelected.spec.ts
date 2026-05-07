@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 import {BrowserUtils} from '../../utils/generic/BrowserUtils';
 
 import { DMPage } from '../../utils/pages/DMPage';
-import { DashboardPage } from '../../utils/pages/DashboardPage';
+import {DashboardPage_Locators, DashboardPage, AxisType } from '../../utils/pages/DashboardPage';
 import { LoginHelper } from '../../utils/helpers/LoginHelper';
 import { DMHelper } from '../../utils/helpers/DMHelper';
+import { DashboardHelper } from '../../utils/helpers/DashboardHelper';
 
 test.afterEach(async ({ page }, testInfo) => {
   // Only pause if the test failed AND we are not in a CI environment (like Jenkins)
@@ -17,43 +18,33 @@ test.afterEach(async ({ page }, testInfo) => {
   }
 });
 
-test('Validate Add Column functionality on Dashboard', async ({ page }) => {
-  
-    console.log('DB Config:', {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME
-});
+test('Dashboard - Validate New Columns on Charts Legends When All Columns Selected', async ({ page }) => {
+
   // Code to initialize the required utils and helper classes
   const browserUtils = new BrowserUtils();
   const loginHelper = new LoginHelper(page);
   const dmHelper = new DMHelper(page);
+  const dashboardHelper = new DashboardHelper(page);
   const dmChat = new DMPage(page);
   const dashboardPage = new DashboardPage(page);
 
   // Code to delcare and initialize required variables
-  const datetimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const dashboardName = `Test Dashboard ${datetimestamp}`;
-  const columnName = "Custom Moneyline " + datetimestamp;
+  const shortTs = Date.now();
+  const dashboardName = `Test Dashboard ${shortTs}`;
+  const columnName = `CM_${shortTs}`;
 
   // Code to launch app , login and select the project
   await loginHelper.appLogin('autoae','Sports Alpha - NHL','test_auto');
 
-  // Navigating to the DataMessenger and run the query
-  await dmHelper.runQuery('multi book live odds');
-  await dmChat.dmResponseTable.waitFor({ state: 'visible', timeout: 45000 });
-  
-  // Code to hover on Response table and click More options
-  await dmChat.dmResponseTable.hover();
-  await dmChat.dmResponseTableMoreOptions.click();
-  await dmChat.dmResponseTableAddToDashboardOption.click();
-
-  // Code to add a new column on Dashboard
-  await dashboardPage.createNewDashboardRadioBtn.waitFor({ state: 'visible', timeout: 10000 });
-  await dashboardPage.createNewDashboardRadioBtn.click();
+  // Create a new Dashboard and Run Query
+  await dashboardPage.createNewDashboardBtn.click();
   await dashboardPage.dashboardNameInput.fill(dashboardName);
-  await dashboardPage.addToDashboardBtn.click();
+  await dashboardPage.createDashboardBtn.click();
+  await page.waitForTimeout(5000);
+
+  await dashboardPage.dashboardRunQueryBtn.fill('multi book live odds');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(10000);
 
   // Assertion to verify the column is added on Dashboard
   await dashboardPage.dashboardTile.waitFor({ state: 'visible', timeout: 10000 });
@@ -85,25 +76,29 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   await page.waitForTimeout(15000);
   await dashboardPage.dashboardColumnSelector(columnName).waitFor({ state: 'visible' , timeout: 10000});
 
-  // code to validate the newly added column Data
-  // Get column field indexes
-  const moneylineField = await page.getByRole('columnheader', { name: 'Moneyline', exact: true }).getAttribute('tabulator-field');
-  const customColumnField = await page.getByRole('columnheader', { name: columnName, exact: true }).getAttribute('tabulator-field');
+  // Validate the added column is displayed on chart legends for all column charts when the column is selected in chart settings
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardColumnChart,AxisType.Y_AXIS,DashboardPage_Locators.dashboardChartsLegendColumnSelector,columnName,true );
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardBarChart, AxisType.X_AXIS,DashboardPage_Locators.dashboardChartsLegendColumnSelector,columnName,true);
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardLineChart,AxisType.Y_AXIS,DashboardPage_Locators.dashboardChartsLegendColumnSelector,columnName,true );
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardStackedBarChart,AxisType.X_AXIS,DashboardPage_Locators.dashboardChartsLegendColumnSelector,columnName,true);
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardStackedColumnChart, AxisType.Y_AXIS, DashboardPage_Locators.dashboardChartsLegendColumnSelector, columnName, true  );
+  await dashboardHelper.validateColumnOnChartLegends(DashboardPage_Locators.dashboardColumnLineComboChart, AxisType.Y_AXIS,DashboardPage_Locators.dashboardChartsLegendColumnSelector, columnName, true );
 
-  // Get table rows
-  const rows = page.locator(".dashboard-tile-response-container .tabulator-row");
-  const rowsToValidate = Math.min(5, await rows.count());
-
-  for (let i = 0; i < rowsToValidate; i++) {
-    const moneylineValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${moneylineField}"]`).textContent() || "0" );
-    const customValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${customColumnField}"]`).textContent() || "0");
-    const expectedValue = moneylineValue + 100;
-
-    expect(customValue).toBeCloseTo(expectedValue, 2);
-    console.log(`Row ${i + 1}: Moneyline = ${moneylineValue}, Custom Column = ${customValue}, Expected Custom Column = ${expectedValue}`);
-  }
-
-  // Save the dashboard after adding the column
+// Save the Dashboard 
   await dashboardPage.dashbaordSaveBtn.click();
-
+  await page.waitForTimeout(10000);
+  console.log("Dashboard is saved successfully after validating the Configure Custom Column window fields.");
+  
 }); 
+
+// Delete the Dashboard after test execution
+test.afterEach(async ({ page }) => {
+
+  const dashboardPage = new DashboardPage(page);
+
+  await dashboardPage.dashboardOptionsBtn.click();
+  await dashboardPage.dashboardDeleteOption.click();
+  await dashboardPage.deleteDashboardConfirmBtn.click();
+  await page.waitForTimeout(5000);
+  console.log("Dashboard is deleted successfully after test execution.");
+})

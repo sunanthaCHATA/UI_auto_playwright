@@ -17,7 +17,7 @@ test.afterEach(async ({ page }, testInfo) => {
   }
 });
 
-test('Validate Add Column functionality on Dashboard', async ({ page }) => {
+test('Dashboard - Validate Duplicate Column Error and Clear All Functionality', async ({ page }) => {
 
   // Code to initialize the required utils and helper classes
   const browserUtils = new BrowserUtils();
@@ -27,27 +27,22 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   const dashboardPage = new DashboardPage(page);
 
   // Code to delcare and initialize required variables
-  const datetimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const dashboardName = `Test Dashboard ${datetimestamp}`;
-  const columnName = "Custom Moneyline " + datetimestamp;
+  const shortTs = Date.now();
+  const dashboardName = `Test Dashboard ${shortTs}`;
+  const columnName = `CM_${shortTs}`;
 
   // Code to launch app , login and select the project
   await loginHelper.appLogin('autoae','Sports Alpha - NHL','test_auto');
 
-  // Navigating to the DataMessenger and run the query
-  await dmHelper.runQuery('multi book live odds');
-  await dmChat.dmResponseTable.waitFor({ state: 'visible', timeout: 45000 });
-  
-  // Code to hover on Response table and click More options
-  await dmChat.dmResponseTable.hover();
-  await dmChat.dmResponseTableMoreOptions.click();
-  await dmChat.dmResponseTableAddToDashboardOption.click();
-
-  // Code to add a new column on Dashboard
-  await dashboardPage.createNewDashboardRadioBtn.waitFor({ state: 'visible', timeout: 10000 });
-  await dashboardPage.createNewDashboardRadioBtn.click();
+  // Create a new Dashboard and Run Query
+  await dashboardPage.createNewDashboardBtn.click();
   await dashboardPage.dashboardNameInput.fill(dashboardName);
-  await dashboardPage.addToDashboardBtn.click();
+  await dashboardPage.createDashboardBtn.click();
+  await page.waitForTimeout(5000);
+
+  await dashboardPage.dashboardRunQueryBtn.fill('multi book live odds');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(10000);
 
   // Assertion to verify the column is added on Dashboard
   await dashboardPage.dashboardTile.waitFor({ state: 'visible', timeout: 10000 });
@@ -66,7 +61,7 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   await dashboardPage.customColumnNameInput.fill(columnName);
   
   // code to validate duplicate column name "A column with this name already exists."
-  const ExistingColumnName = await page.locator("(//*[@class='tabulator-header']//*[@class='tabulator-col-title'])[1]").innerText();
+  const ExistingColumnName = await dashboardPage.dashboardFirstColumnHeader.innerText();
   await dashboardPage.customColumnNameInput.fill(ExistingColumnName);
   const duplicateErrorMessage = page.locator('text=A column with this name already exists.');
   await expect(duplicateErrorMessage).toBeVisible();
@@ -108,5 +103,23 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
 
   // Click Cancel to close Add Custom Column window
   await dashboardPage.customColumnCancelBtn.click();
-
+// Save the Dashboard 
+  await dashboardPage.dashbaordSaveBtn.click();
+  await page.waitForTimeout(10000);
+  console.log("Dashboard is saved successfully after validating the Configure Custom Column window fields.");
+  
 }); 
+
+// Delete the Dashboard after test execution
+test.afterEach(async ({ page }) => {
+
+  const dashboardPage = new DashboardPage(page);
+
+  await dashboardPage.dashboardOptionsBtn.click();
+  await dashboardPage.dashboardDeleteOption.click();
+  await dashboardPage.deleteDashboardConfirmBtn.click();
+  await page.waitForTimeout(5000);
+
+  console.log("Dashboard is deleted successfully after test execution.");
+
+})

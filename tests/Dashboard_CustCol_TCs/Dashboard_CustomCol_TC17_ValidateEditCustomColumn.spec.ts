@@ -17,7 +17,7 @@ test.afterEach(async ({ page }, testInfo) => {
   }
 });
 
-test('Validate Add Column functionality on Dashboard', async ({ page }) => {
+test('Dashboard - Validate Edit Custom Column functionality on Dashboard', async ({ page }) => {
 
   // Code to initialize the required utils and helper classes
   const browserUtils = new BrowserUtils();
@@ -27,27 +27,23 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   const dashboardPage = new DashboardPage(page);
 
   // Code to delcare and initialize required variables
-  const datetimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const dashboardName = `Test Dashboard ${datetimestamp}`;
-  const columnName = "Custom Moneyline " + datetimestamp;
+  const shortTs = Date.now();
+  const dashboardName = `Test Dashboard ${shortTs}`;
+  const columnName = `CM_${shortTs}`;
 
   // Code to launch app , login and select the project
   await loginHelper.appLogin('autoae','Sports Alpha - NHL','test_auto');
 
-  // Navigating to the DataMessenger and run the query
-  await dmHelper.runQuery('all team game stats');
-  await dmChat.dmResponseTable.waitFor({ state: 'visible', timeout: 45000 });
-  
-  // Code to hover on Response table and click More options
-  await dmChat.dmResponseTable.hover();
-  await dmChat.dmResponseTableMoreOptions.click();
-  await dmChat.dmResponseTableAddToDashboardOption.click();
 
-  // Code to add a new column on Dashboard
-  await dashboardPage.createNewDashboardRadioBtn.waitFor({ state: 'visible', timeout: 10000 });
-  await dashboardPage.createNewDashboardRadioBtn.click();
+   // Create a new Dashboard and Run Query
+  await dashboardPage.createNewDashboardBtn.click();
   await dashboardPage.dashboardNameInput.fill(dashboardName);
-  await dashboardPage.addToDashboardBtn.click();
+  await dashboardPage.createDashboardBtn.click();
+  await page.waitForTimeout(5000);
+
+  await dashboardPage.dashboardRunQueryBtn.fill('all team game stats');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(10000);
 
   // Assertion to verify the column is added on Dashboard
   await dashboardPage.dashboardTile.waitFor({ state: 'visible', timeout: 10000 });
@@ -69,13 +65,7 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   await dashboardPage.variableColumnOption('Goals').click();
   await dashboardPage.plusOperator.click();  
   await dashboardPage.variableColumnOption('Points').click();
-  await dashboardPage.minusOperator.click();  
-  await dashboardPage.variableColumnOption('Assists').click();
-  await dashboardPage.multiplyOperator.click();  
-  await dashboardPage.variableColumnOption('Saves').click();
-  await dashboardPage.divideOperator.click();  
-  await dashboardPage.variableCustomNumberOption.click();
-  await dashboardPage.customnumberInput(1).fill("4");
+
 
   // Code to Save the custom column and verify the column is added on dashboard
   await page.waitForTimeout(5000);
@@ -86,12 +76,48 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
   await page.waitForTimeout(15000);
   await dashboardPage.dashboardColumnSelector(columnName).waitFor({ state: 'visible' , timeout: 25000});
 
+
+
+
+  // Scroll right until the newly created column is visible on UI
+  await dashboardPage.dashboardTile.hover();
+  await dashboardPage.dashbaordTileShowHideColumnOption.click();
+  await dashboardPage.dashboardShowHideSelectAllOption.check();
+  await dashboardPage.dashbaordApplyButton.click();
+
+  const scrollElement = page.locator("(//*[@role='row']/div[@tabulator-field='0'])[2]");
+  const targetColumn = dashboardPage.dashboardColumnSelector(columnName);
+  await BrowserUtils.scrollUntilElementVisible(page, scrollElement, targetColumn, 'ArrowRight', 25);
+  console.log("Successfully scrolled to reveal the custom column");
+
+  // code to Right Click on newly created Column and Validate the presence of Edit Column Option in the context menu
+  await targetColumn.hover();
+  await targetColumn.click({ button: 'right' });
+  await page.waitForTimeout(1000);
+
+  // Code to validate the Edit Column option functionality
+  await dashboardPage.editColumnOption.click();
+  await page.waitForTimeout(2000);
+
+  // code to fill formula for the custom column
+  await dashboardPage.plusOperator.click();  
+  await dashboardPage.variableCustomNumberOption.click();
+  await dashboardPage.customnumberInput(1).fill("4");
+
+  // Code to Save the custom column and verify the column is added on dashboard
+  await page.waitForTimeout(5000);
+  await dashboardPage.customColumnUpdateBtn.click();
+  console.log("Custom Column is edited successfully on Dashboard with name: " + columnName);
+
+  // wait for 10 sec before and visually verify the edited column on dashboard
+  await page.waitForTimeout(15000);
+  await dashboardPage.dashboardColumnSelector(columnName).waitFor({ state: 'visible' , timeout: 25000});
+
+
   // Get column field indexes
   const GoalsField = await page.getByRole('columnheader', { name: 'Goals', exact: true }).getAttribute('tabulator-field');
   const PointsField = await page.getByRole('columnheader', { name: 'Points', exact: true }).getAttribute('tabulator-field');
-  const AssistsField = await page.getByRole('columnheader', { name: 'Assists', exact: true }).getAttribute('tabulator-field');
-  const SavesField = await page.getByRole('columnheader', { name: 'Saves', exact: true }).getAttribute('tabulator-field');
-
+  
   // 🔹 Get custom column field
   const customColumnField = await page.getByRole('columnheader', { name: columnName, exact: true }).getAttribute('tabulator-field');
 
@@ -103,18 +129,34 @@ test('Validate Add Column functionality on Dashboard', async ({ page }) => {
 
     const goalsValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${GoalsField}"]`).textContent() || "0");
     const pointsValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${PointsField}"]`).textContent() || "0");
-    const assistsValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${AssistsField}"]`).textContent() || "0");
-    const savesValue = parseFloat(await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${SavesField}"]`).textContent() || "0");
-
-    const expectedCustomValue = goalsValue + pointsValue - assistsValue * savesValue / 4;
+    
+    const expectedCustomValue = goalsValue + pointsValue + 4;
     const customValueText = await rows.nth(i).locator(`.tabulator-cell[tabulator-field="${customColumnField}"]`).textContent() || "0";
     const customValue = parseFloat(customValueText);
 
     expect(customValue).toBeCloseTo(expectedCustomValue, 2);
 
-    console.log(`Row ${i + 1}: Goals=${goalsValue}, Points=${pointsValue}, Assists=${assistsValue}, Saves=${savesValue}, Custom=${customValue}, Expected=${expectedCustomValue}`
+    console.log(`Row ${i + 1}: Goals=${goalsValue}, Points=${pointsValue}, Custom=${customValue}, Expected=${expectedCustomValue}`
     );
   }
-  
 
+  // Save the Dashboard 
+  await dashboardPage.dashbaordSaveBtn.click();
+  await page.waitForTimeout(10000);
+  console.log("Dashboard is saved successfully after validating the Configure Custom Column window fields.");
+  
 }); 
+
+// Delete the Dashboard after test execution
+test.afterEach(async ({ page }) => {
+
+  const dashboardPage = new DashboardPage(page);
+
+  await dashboardPage.dashboardOptionsBtn.click();
+  await dashboardPage.dashboardDeleteOption.click();
+  await dashboardPage.deleteDashboardConfirmBtn.click();
+  await page.waitForTimeout(5000);
+
+  console.log("Dashboard is deleted successfully after test execution.");
+
+})

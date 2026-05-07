@@ -64,5 +64,29 @@ export class BrowserUtils {
     await field.press('Enter');
     console.log(`Successfully Entered Text: ${value} into text field xpath: ${xpath}`);
   }
+  static async scrollUntilElementVisible(
+    page: Page,
+    elementToClick: Locator,
+    targetElement: Locator,
+    direction: 'ArrowRight' | 'ArrowLeft' | 'ArrowUp' | 'ArrowDown',
+    minIterations: number = 20
+  ): Promise<void> {
+    await elementToClick.click();
+
+    // Initial Scrolls to ensure the target element is within the scrollable area
+    for (let i = 0; i < minIterations; i++) {
+      await page.keyboard.press(direction);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      await page.keyboard.press(direction);
+      if (await targetElement.isVisible()) {
+        return;
+      }
+    }
+
+  }
 }
+
+
 
